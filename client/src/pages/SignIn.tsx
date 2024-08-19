@@ -2,19 +2,28 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { Alert, Button, FloatingLabel, Spinner } from "flowbite-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  signInFailure,
+  signInStart,
+  signInSuccess,
+} from "../redux/user/userSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 interface SignInBody {
   email: string;
   password: string;
 }
 
 const SignIn = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const userRedux = useAppSelector((state) => state.user);
+
   const [formData, setFormData] = useState<SignInBody>({
     email: "",
     password: "",
   });
-  const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const [loading, setLoading] = useState<boolean>(false);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -30,10 +39,10 @@ const SignIn = () => {
       formData?.password === "" ||
       formData?.password === undefined
     ) {
-      return setErrorMessage("Please fill out all fields.");
+      return dispatch(signInFailure("Please fill out all fields."));
     }
 
-    setLoading(true); // Set loading to true when the request starts
+    dispatch(signInStart()); // Set loading to true when the request starts
 
     try {
       const res: AxiosResponse = await axios.post("/api/auth/signin", {
@@ -42,20 +51,17 @@ const SignIn = () => {
       });
 
       if (res?.status !== 200) {
-        setErrorMessage(res.data);
+        dispatch(signInFailure(res.data));
       } else {
-        setErrorMessage(undefined);
-        setLoading(false);
         navigate("/");
+        dispatch(signInSuccess(res.data));
       }
     } catch (error) {
       if (error instanceof AxiosError) {
-        setErrorMessage(error?.response?.data?.message);
+        dispatch(signInFailure(error?.response?.data?.message));
       } else {
-        setErrorMessage("An unexpected error occurred.");
+        dispatch(signInFailure("An unexpected error occurred."));
       }
-    } finally {
-      setLoading(false); // Set loading to false after the request completes
     }
   };
 
@@ -92,9 +98,9 @@ const SignIn = () => {
             <Button
               gradientDuoTone="purpleToPink"
               type="submit"
-              disabled={loading}
+              disabled={userRedux.loading}
             >
-              {loading ? (
+              {userRedux.loading ? (
                 <>
                   <Spinner size="sm" />
                   <span>Loading....</span>
@@ -104,9 +110,9 @@ const SignIn = () => {
               )}
             </Button>
           </form>
-          {errorMessage && (
+          {userRedux.error && (
             <Alert className="mt-5" color="failure">
-              {errorMessage}
+              {userRedux.error}
             </Alert>
           )}
           <div className="flex gap-2 text-sm mt-5">
