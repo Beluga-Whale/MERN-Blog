@@ -1,22 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-
-interface User {
-  _id: string;
-  username: string;
-  email: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface UserState {
-  currentUser: User | null;
+  currentUser: object | null;
+  currentUserGoogle: object | null;
   error: string | null;
   loading: boolean;
 }
 
 const initialState: UserState = {
   currentUser: null,
+  currentUserGoogle: null,
   error: null,
   loading: false,
 };
@@ -29,8 +21,15 @@ export const userSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    signInSuccess: (state, actions: PayloadAction<User>) => {
+    signInSuccess: (state, actions) => {
       state.currentUser = actions.payload;
+      state.currentUserGoogle = null;
+      state.loading = false;
+      state.error = null;
+    },
+    signInGoggleSuccess: (state, actions) => {
+      state.currentUser = null;
+      state.currentUserGoogle = actions.payload;
       state.loading = false;
       state.error = null;
     },
@@ -41,6 +40,11 @@ export const userSlice = createSlice({
   },
 });
 
-export const { signInFailure, signInStart, signInSuccess } = userSlice.actions;
+export const {
+  signInFailure,
+  signInStart,
+  signInSuccess,
+  signInGoggleSuccess,
+} = userSlice.actions;
 
 export default userSlice.reducer;

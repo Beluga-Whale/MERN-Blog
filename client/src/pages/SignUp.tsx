@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { Alert, Button, FloatingLabel, Spinner } from "flowbite-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import OAuth from "../components/OAuth";
 interface SignUpBody {
   username: string;
   email: string;
@@ -115,6 +116,7 @@ const SignUp = () => {
                 "Signup"
               )}
             </Button>
+            <OAuth />
           </form>
           {errorMessage && (
             <Alert className="mt-5" color="failure">

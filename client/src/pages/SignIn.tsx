@@ -8,6 +8,7 @@ import {
   signInSuccess,
 } from "../redux/user/userSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import OAuth from "../components/OAuth";
 interface SignInBody {
   email: string;
   password: string;
@@ -109,6 +110,7 @@ const SignIn = () => {
                 "Sign In"
               )}
             </Button>
+            <OAuth />
           </form>
           {userRedux.error && (
             <Alert className="mt-5" color="failure">
