@@ -67,13 +67,14 @@ export const signin = async (req, res, next) => {
 };
 
 export const google = async (req, res, next) => {
-  const { name, email, googlePhotoUrl } = req.body;
-
+  const { email, name, googlePhotoUrl } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
-      // NOTE - ถ้า user มีอยู่ใน DB ก้ให้สามารถ set cookie ได้้เลย
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const token = jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.JWT_SECRET
+      );
       const { password, ...rest } = user._doc;
       res
         .status(200)
@@ -82,15 +83,10 @@ export const google = async (req, res, next) => {
         })
         .json(rest);
     } else {
-      // NOTE - แต่ถ้าไม่มี ก้ให้ทำการเก็บลง DB แล้วทำการ set cookie
-
-      // NOTE - ต้องทำการ randompasswordมาให้่เพราะ DB Requiered password
-      const generatePassword =
+      const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-
-      const hashedPassword = bcryptjs.hashSync(generatePassword, 10);
-
+      const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
       const newUser = new User({
         username:
           name.toLowerCase().split(" ").join("") +
@@ -99,11 +95,12 @@ export const google = async (req, res, next) => {
         password: hashedPassword,
         profilePicture: googlePhotoUrl,
       });
-
-      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-
+      await newUser.save();
+      const token = jwt.sign(
+        { id: newUser._id, isAdmin: newUser.isAdmin },
+        process.env.JWT_SECRET
+      );
       const { password, ...rest } = newUser._doc;
-
       res
         .status(200)
         .cookie("access_token", token, {
