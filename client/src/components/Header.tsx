@@ -1,10 +1,15 @@
-import { Button, Navbar, TextInput } from "flowbite-react";
+import { Avatar, Button, Dropdown, Navbar, TextInput } from "flowbite-react";
 import { Link, useLocation } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon } from "react-icons/fa";
+import { useAppSelector } from "../redux/hooks";
 
 const Header = () => {
+  const { currentUser, currentUserGoogle } = useAppSelector(
+    (state) => state.user
+  );
   const { pathname } = useLocation();
+
   return (
     <Navbar className="border-b-2">
       <Link
@@ -32,11 +37,44 @@ const Header = () => {
         <Button className="w-12 h-10 hidden sm:inline" color="gray" pill>
           <FaMoon />
         </Button>
-        <Link to="/sign-in">
-          <Button gradientDuoTone="purpleToBlue" outline color="gray" pill>
-            Sign In
-          </Button>
-        </Link>
+        {currentUser || currentUserGoogle ? (
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <Avatar
+                alt="user"
+                img={
+                  currentUser?.profilePicture ||
+                  currentUserGoogle?.profilePicture ||
+                  undefined
+                }
+                rounded
+              />
+            }
+          >
+            <Dropdown.Header>
+              <span className="text-sm block">
+                @{currentUser?.username || currentUserGoogle?.username}
+              </span>
+              <span className="text-sm block font-medium ">
+                @{currentUser?.email || currentUserGoogle?.email}
+              </span>
+            </Dropdown.Header>
+            <Link to="/dashboard?tab=profile">
+              <Dropdown.Item>Profile</Dropdown.Item>
+            </Link>
+            <Dropdown.Divider />
+            <Dropdown.Item>Sign Up</Dropdown.Item>
+          </Dropdown>
+        ) : (
+          <Link to="/sign-in">
+            <Button gradientDuoTone="purpleToBlue" outline color="gray" pill>
+              Sign In
+            </Button>
+          </Link>
+        )}
+
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse>
