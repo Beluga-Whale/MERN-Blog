@@ -1,5 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../redux/hooks";
+import React, {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { Alert, Button, FloatingLabel } from "flowbite-react";
 import {
   getDownloadURL,
@@ -9,11 +15,30 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { Progress } from "flowbite-react";
+import {
+  updateFailure,
+  updateStart,
+  updateSuccess,
+} from "../redux/user/userSlice";
+import axios, { AxiosError, AxiosResponse } from "axios";
+
+interface FormDataType {
+  username?: string;
+  email?: string;
+  password?: string;
+  profilePicture?: string;
+}
+
 const DashProfile = () => {
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
+  const { updateProfileError } = useAppSelector((state) => state.user);
+
   const filePickerRef = useRef<HTMLInputElement | null>(null);
+  const [updateProfileSuccess, setUpdateProfileSuccess] = useState<
+    boolean | null
+  >(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageFileUrl, setImageFileUrl] = useState<string | null>(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState<
@@ -22,6 +47,9 @@ const DashProfile = () => {
   const [imageFileUploadError, setImageFileUploadError] = useState<
     string | null
   >(null);
+  const [formData, setFormData] = useState<FormDataType | undefined>(undefined);
+
+  const dispatch = useAppDispatch();
 
   const handelFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target?.files?.[0];
@@ -30,12 +58,6 @@ const DashProfile = () => {
       setImageFileUrl(URL.createObjectURL(file));
     }
   };
-
-  useEffect(() => {
-    if (imageFile) {
-      upLoadImage();
-    }
-  }, [imageFile]);
 
   const upLoadImage = () => {
     // service firebase.storage {
@@ -73,16 +95,74 @@ const DashProfile = () => {
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setImageFileUrl(downloadURL);
+            setFormData({ ...formData, profilePicture: downloadURL });
           });
         }
       );
     }
   };
 
+  const handleForm = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  console.log("formData?.username", formData);
+
+  const handleSubmit = async (e: FormEvent<HTMLElement>) => {
+    e.preventDefault();
+    // NOTE - Check ว่ามีการเปลี่ยนของ formData ไหมถ้าไม่มีให้จบการทำง่านเลย
+    if (
+      !formData?.email &&
+      !formData?.username &&
+      !formData?.password &&
+      !formData?.profilePicture
+    ) {
+      return;
+    }
+    dispatch(updateStart());
+    try {
+      const res: AxiosResponse = await axios.put(
+        `api/user/update/${currentUser?._id || currentUserGoogle?._id}`,
+        {
+          profilePicture: formData?.profilePicture,
+          username: formData?.username,
+          email: formData?.email,
+          password: formData?.password,
+        }
+      );
+      if (res?.status !== 200) {
+        dispatch(updateFailure(res.data));
+        setUpdateProfileSuccess(false);
+      } else {
+        const typeUpdateProfile = currentUser ? "db" : "google";
+        dispatch(
+          updateSuccess({ typeUpdate: typeUpdateProfile, data: res?.data })
+        );
+        setUpdateProfileSuccess(true);
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        dispatch(updateFailure(error?.response?.data?.message));
+        setUpdateProfileSuccess(false);
+      } else {
+        dispatch(updateFailure("An unexpected error occurred."));
+        setUpdateProfileSuccess(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (imageFile) {
+      upLoadImage();
+    }
+    return () => {
+      dispatch(updateFailure(null));
+      setUpdateProfileSuccess(null);
+    };
+  }, [imageFile]);
   return (
     <div className="max-w-lg w-full mx-auto p-4">
       <h1 className="text-center my-5 font-semibold text-3xl">My Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
           type="file"
           accept="image/*"
@@ -133,6 +213,7 @@ const DashProfile = () => {
           type="username"
           label="Your username"
           id="username"
+          onChange={handleForm}
           defaultValue={currentUser?.username || currentUserGoogle?.username}
         />
         <FloatingLabel
@@ -140,6 +221,7 @@ const DashProfile = () => {
           type="email"
           label="Your email"
           id="email"
+          onChange={handleForm}
           defaultValue={currentUser?.email || currentUserGoogle?.email}
         />
         <FloatingLabel
@@ -147,10 +229,16 @@ const DashProfile = () => {
           type="password"
           label="Your password"
           id="password"
+          onChange={handleForm}
         />
+        {updateProfileError ? (
+          <Alert color="failure">{updateProfileError}</Alert>
+        ) : null}
+
         <Button type="submit" gradientDuoTone="purpleToBlue" outline>
           Update
         </Button>
+        {updateProfileSuccess && <Alert color="success">Update Success</Alert>}
       </form>
       <div className="text-end mt-4">
         <p className=" cursor-pointer text-red-300">Sign Out</p>
