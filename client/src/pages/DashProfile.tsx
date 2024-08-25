@@ -22,8 +22,6 @@ const DashProfile = () => {
   const [imageFileUploadError, setImageFileUploadError] = useState<
     string | null
   >(null);
-  console.log("imageFileUploadProgress", imageFileUploadProgress);
-  console.log("imageFileUploadError", imageFileUploadError);
 
   const handelFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target?.files?.[0];
@@ -79,7 +77,6 @@ const DashProfile = () => {
         }
       );
     }
-    console.log("Uploading....");
   };
 
   return (
