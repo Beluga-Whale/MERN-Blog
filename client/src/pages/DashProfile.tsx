@@ -16,6 +16,7 @@ import {
 import { app } from "../firebase";
 import { Progress } from "flowbite-react";
 import {
+  resetState,
   updateFailure,
   updateStart,
   updateSuccess,
@@ -105,8 +106,8 @@ const DashProfile = () => {
   const handleForm = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  console.log("formData?.username", formData);
 
+  // NOTE - Update form
   const handleSubmit = async (e: FormEvent<HTMLElement>) => {
     e.preventDefault();
     // NOTE - Check ว่ามีการเปลี่ยนของ formData ไหมถ้าไม่มีให้จบการทำง่านเลย
@@ -147,6 +148,19 @@ const DashProfile = () => {
         dispatch(updateFailure("An unexpected error occurred."));
         setUpdateProfileSuccess(false);
       }
+    }
+  };
+
+  const handleSignout = async () => {
+    try {
+      const res = await axios.post("/api/user/signout");
+      if (res?.status !== 200) {
+        console.log(res?.data);
+      } else {
+        dispatch(resetState());
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -241,7 +255,9 @@ const DashProfile = () => {
         {updateProfileSuccess && <Alert color="success">Update Success</Alert>}
       </form>
       <div className="text-end mt-4">
-        <p className=" cursor-pointer text-red-300">Sign Out</p>
+        <p className=" cursor-pointer text-red-300" onClick={handleSignout}>
+          Sign Out
+        </p>
       </div>
     </div>
   );

@@ -92,6 +92,7 @@ export const userSlice = createSlice({
       state.updateProfileLoading = false;
       state.updateProfileError = action.payload;
     },
+    resetState: () => initialState,
   },
 });
 
@@ -103,6 +104,7 @@ export const {
   updateFailure,
   updateStart,
   updateSuccess,
+  resetState,
 } = userSlice.actions;
 
 export default userSlice.reducer;
