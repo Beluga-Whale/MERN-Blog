@@ -6,6 +6,7 @@ interface UserCurrentState {
   email: string;
   createdAt: string;
   updatedAt: string;
+  isAdmin: boolean;
   __v: number;
 }
 
@@ -13,6 +14,7 @@ interface UserCurrentGoogleState {
   username: string;
   email: string;
   profilePicture: string;
+  isAdmin: boolean;
   _id: string;
 }
 interface UserState {
@@ -67,7 +69,7 @@ export const userSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
-    signInFailure: (state, action: PayloadAction<string>) => {
+    signInFailure: (state, action: PayloadAction<string | null>) => {
       state.loading = false;
       state.error = action.payload;
     },

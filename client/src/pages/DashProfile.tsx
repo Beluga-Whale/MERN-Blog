@@ -22,6 +22,7 @@ import {
   updateSuccess,
 } from "../redux/user/userSlice";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { Link } from "react-router-dom";
 
 interface FormDataType {
   username?: string;
@@ -248,10 +249,22 @@ const DashProfile = () => {
         {updateProfileError ? (
           <Alert color="failure">{updateProfileError}</Alert>
         ) : null}
-
         <Button type="submit" gradientDuoTone="purpleToBlue" outline>
           Update
         </Button>
+        {currentUser?.isAdmin ||
+          (currentUserGoogle?.isAdmin && (
+            <Link to="/create-post">
+              <Button
+                type="button"
+                gradientDuoTone="purpleToPink"
+                className="w-full"
+              >
+                Create post
+              </Button>
+            </Link>
+          ))}
+
         {updateProfileSuccess && <Alert color="success">Update Success</Alert>}
       </form>
       <div className="text-end mt-4">
