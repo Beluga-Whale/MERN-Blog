@@ -48,6 +48,7 @@ export const signin = async (req, res, next) => {
     const token = jwt.sign(
       {
         id: emailCheck._id,
+        isAdmin: emailCheck.isAdmin,
       },
       process.env.JWT_SECRET
     );
@@ -69,6 +70,7 @@ export const signin = async (req, res, next) => {
 export const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
+    // NOTE - หาว่าเคยมีเมลนี้อยู้ในระบบแล้วหรือยัง
     const user = await User.findOne({ email });
     if (user) {
       const token = jwt.sign(

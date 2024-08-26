@@ -8,7 +8,6 @@ import Projects from "./pages/Projects";
 import Header from "./components/Header";
 import FooterCom from "./components/Footer";
 import PrivateRoute from "./pages/PrivateRoute";
-// import FooterCom from "./components/Footer";
 
 export default function App() {
   return (
