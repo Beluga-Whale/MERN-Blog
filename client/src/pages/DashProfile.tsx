@@ -23,6 +23,7 @@ import {
 } from "../redux/user/userSlice";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { Link } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
 
 interface FormDataType {
   username?: string;
@@ -85,10 +86,8 @@ const DashProfile = () => {
           setImageFileUploadProgress(Number(progress?.toFixed(0)));
         },
         // NOTE - ถ้า error จะให้ set ลงใน setImageFileUploadError
-        () => {
-          setImageFileUploadError(
-            "Coulg not upload image (File must be less than 2MB)"
-          );
+        (error: FirebaseError) => {
+          setImageFileUploadError(error.message);
           setImageFileUploadProgress(null);
           setImageFile(null);
           setImageFileUrl(null);
