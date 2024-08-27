@@ -30,5 +30,5 @@ const userSchema = new mongoose.Schema(
 );
 
 const User = mongoose.model("User", userSchema);
-// 5:39:10
+
 export default User;
