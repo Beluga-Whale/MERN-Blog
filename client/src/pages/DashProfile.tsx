@@ -173,6 +173,7 @@ const DashProfile = () => {
       setUpdateProfileSuccess(null);
     };
   }, [imageFile]);
+
   return (
     <div className="max-w-lg w-full mx-auto p-4">
       <h1 className="text-center my-5 font-semibold text-3xl">My Profile</h1>

@@ -5,11 +5,14 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { app } from "../firebase";
 import { FirebaseError } from "firebase/app";
+import axios, { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 interface FormDataType {
   title?: string;
@@ -19,13 +22,15 @@ interface FormDataType {
 }
 
 const CreatePost = () => {
-  const [value, setValue] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [imageUploadProgress, setImageUploadProgress] = useState<number | null>(
     null
   );
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormDataType | undefined>(undefined);
+  const [craetePostError, setCreatePostError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   // NOTE - จัดการเก็บ file ลงใน state
   const handelFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,15 +82,59 @@ const CreatePost = () => {
     }
   };
 
-  console.log("formData", formData?.image);
+  const handleSubmit = async (e: FormEvent<HTMLElement>) => {
+    e.preventDefault();
+    if (!formData?.image) {
+      return setCreatePostError("You have't upload you image ");
+    }
+    // NOTE - เคลียค่า CreatePostError อาจเกิดจาก ไม่ได้ uploadimage
+    setCreatePostError(null);
+    try {
+      const data = await axios.post("/api/post/create", formData);
+      // NOTE - ถ้า update ไม่สำเร็จก้ให้ response error ออกมาเก็บใน state
+      if (data?.status !== 201) {
+        setCreatePostError(data?.data);
+      } else {
+        setCreatePostError(null);
+        console.log("DATA", data?.data);
+
+        Swal.fire({
+          icon: "success",
+          title: "Create Success",
+        }).then((res) => {
+          if (res.isConfirmed) {
+            navigate(`/post/${data?.data?.slug}`);
+          }
+        });
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        setCreatePostError(error?.response?.data?.message);
+      } else {
+        setCreatePostError("An unexpected error occurred.");
+      }
+    }
+  };
 
   return (
     <div className="p-3 max-w-5xl mx-auto min-h-screen">
       <h1 className="text-center text-3xl my-7 font-semibold">Create a post</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col sm:flex-row gap-4">
-          <TextInput type="text" placeholder="Title" required id="title" />
-          <Select>
+          <TextInput
+            type="text"
+            placeholder="Title"
+            required
+            id="title"
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+          />
+          <Select
+            onChange={(e) =>
+              setFormData({ ...formData, category: e.target.value })
+            }
+          >
             <option value="">Select a category</option>
             <option value="travel">Travel</option>
             <option value="health">Health</option>
@@ -129,9 +178,9 @@ const CreatePost = () => {
         <ReactQuill
           className="h-72 mb-12"
           theme="snow"
-          value={value}
-          onChange={setValue}
+          onChange={(value) => setFormData({ ...formData, content: value })}
         />
+        {craetePostError && <Alert color="failure">{craetePostError}</Alert>}
         <Button type="submit" gradientDuoTone="purpleToPink">
           Publish
         </Button>
