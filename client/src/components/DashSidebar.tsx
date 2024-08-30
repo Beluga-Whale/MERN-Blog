@@ -1,15 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Sidebar } from "flowbite-react";
-import { HiArrowSmRight, HiUser } from "react-icons/hi";
+import { HiArrowSmRight, HiDocumentText, HiUser } from "react-icons/hi";
 import { resetState } from "../redux/user/userSlice";
 import axios from "axios";
-import { useAppDispatch } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
 const DashSidebar = () => {
   const location = useLocation();
   const [tab, setTab] = useState<string>("");
   const dispatch = useAppDispatch();
+
+  const { currentUser, currentUserGoogle } = useAppSelector(
+    (state) => state.user
+  );
 
   const handleSignout = async () => {
     try {
@@ -39,12 +43,29 @@ const DashSidebar = () => {
             as={Link}
             to="/dashboard?tab=profile"
             icon={HiUser}
-            label={"User"}
+            label={
+              currentUser?.isAdmin || currentUserGoogle?.isAdmin
+                ? "Admin"
+                : "User"
+            }
             active={tab === "profile"}
             labelColor="dark"
           >
             Profile
           </Sidebar.Item>
+          {/* NOTE - เช็คสิทธิ์ว่าเป็น Addmin?? */}
+          {currentUser?.isAdmin ||
+            (currentUserGoogle?.isAdmin && (
+              <Sidebar.Item
+                as={Link}
+                to="/dashboard?tab=posts"
+                icon={HiDocumentText}
+                active={tab === "posts"}
+                labelColor="dark"
+              >
+                Posts
+              </Sidebar.Item>
+            ))}
           <Sidebar.Item
             icon={HiArrowSmRight}
             className="cursor-pointer"
