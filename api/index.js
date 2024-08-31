@@ -28,6 +28,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
 app.use("/api/post", postRoute);
 
+// NOTE - Error handdle เวลาเกิด err ที่โยนมาจาก next(err) จะเข้ามาทำงานส่วนนี้
 app.use((err, req, res, next) => {
   const statusCode = err.StatusCode || 500;
   const message = err.message || "Internal Server Error";
