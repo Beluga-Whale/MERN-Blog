@@ -4,6 +4,7 @@ import { useAppSelector } from "../redux/hooks";
 import { Table } from "flowbite-react";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 interface PostsUser {
   _id?: string;
   userId?: string;
@@ -23,6 +24,7 @@ const DashPosts = () => {
   const [userPosts, setUserPosts] = useState<PostsUser[]>([]);
   const [showMore, setShowMore] = useState<boolean>(true);
 
+  // NOTE - Show more
   const handleShowMore = async () => {
     const startIndex = userPosts.length;
     try {
@@ -38,6 +40,39 @@ const DashPosts = () => {
           setShowMore(false);
         }
       }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // NOTE - Delete posts
+  const handledDelete = async (postId: string, title: string) => {
+    try {
+      Swal.fire({
+        title: "คุณต้องการลบ ?",
+        text: title,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "ใช่, ต้องการลบ",
+        cancelButtonText: "ยกเลิก",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          // NOTE - ถ้ากดตกลง จำทะการ delete
+
+          const res = await axios.delete(
+            `/api/post/deletepost/${postId}/${
+              currentUserGoogle?._id || currentUser?._id
+            }`
+          );
+
+          if (res?.status === 200) {
+            // NOTE - ทำการ fillter post ที่ไม่เท่ากับที่ลบ ออกไป
+            setUserPosts((prev) => prev.filter((post) => post._id !== postId));
+          }
+        }
+      });
     } catch (error) {
       console.log(error);
     }
@@ -103,7 +138,12 @@ const DashPosts = () => {
                   </Table.Cell>
                   <Table.Cell>{post?.category}</Table.Cell>
                   <Table.Cell>
-                    <p className="hover:underline text-red-500 cursor-pointer font-bold ">
+                    <p
+                      className="hover:underline text-red-500 cursor-pointer font-bold "
+                      onClick={() =>
+                        handledDelete(post._id ?? "", post?.title ?? "")
+                      }
+                    >
                       Delete
                     </p>
                   </Table.Cell>
