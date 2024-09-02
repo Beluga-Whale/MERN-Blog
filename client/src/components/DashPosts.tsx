@@ -21,6 +21,27 @@ const DashPosts = () => {
     (state) => state.user
   );
   const [userPosts, setUserPosts] = useState<PostsUser[]>([]);
+  const [showMore, setShowMore] = useState<boolean>(true);
+
+  const handleShowMore = async () => {
+    const startIndex = userPosts.length;
+    try {
+      const res = await axios.get(
+        `/api/post/getposts?userId=${
+          currentUserGoogle?._id || currentUser?._id
+        }&startIndex=${startIndex}`
+      );
+
+      if (res.status === 200) {
+        setUserPosts((prev) => [...prev, ...res.data.posts]);
+        if (res?.data.posts.length < 9) {
+          setShowMore(false);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -30,8 +51,12 @@ const DashPosts = () => {
             currentUser?._id || currentUserGoogle?._id
           }`
         );
+
         if (res.status == 200) {
           setUserPosts(res.data?.posts);
+          if (res?.data?.posts.length < 9) {
+            setShowMore(false);
+          }
         }
       } catch (error) {
         console.log(error);
@@ -43,7 +68,7 @@ const DashPosts = () => {
   }, [currentUser?._id, currentUserGoogle?._id]);
 
   return (
-    <div className="table-auto  md:mx-auto overflow-x-auto  ">
+    <div className="table-auto w-full p-5  md:mx-auto overflow-x-auto  ">
       {(currentUser?.isAdmin || currentUserGoogle?.isAdmin) &&
       userPosts.length > 0 ? (
         <>
@@ -94,6 +119,14 @@ const DashPosts = () => {
               </Table.Body>
             ))}
           </Table>
+          {showMore && (
+            <button
+              className="self-center w-full text-blue-500 hover:underline py-5 "
+              onClick={handleShowMore}
+            >
+              Show more{" "}
+            </button>
+          )}
         </>
       ) : (
         <p>No posts</p>
