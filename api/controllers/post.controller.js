@@ -1,5 +1,6 @@
 import { errorHandler } from "../utils/error.js";
 import Post from "../models/post.model.js";
+import User from "../models/user.model.js";
 
 export const create = async (req, res, next) => {
   // NOTE - เช็คว่าเป็น admin ไหมจาก cookie
@@ -63,7 +64,7 @@ export const getPosts = async (req, res, next) => {
     //NOTE - นับจำนวนโพสต์ทั้งหมดในฐานข้อมูล
     const totalPosts = await Post.countDocuments(query);
 
-    //NOTE - นับจำนวนโพสต์ในช่วงเดือนที่ผ่านมา
+    //NOTE - เดือนที่ผ่านมา
     const now = new Date();
     const oneMonthAgo = new Date(
       now.getFullYear(),
