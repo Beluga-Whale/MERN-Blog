@@ -1,7 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Sidebar } from "flowbite-react";
-import { HiArrowSmRight, HiDocumentText, HiUser } from "react-icons/hi";
+import {
+  HiArrowSmRight,
+  HiDocumentText,
+  HiOutlineUserGroup,
+  HiUser,
+} from "react-icons/hi";
 import { resetState } from "../redux/user/userSlice";
 import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -64,6 +69,18 @@ const DashSidebar = () => {
                 labelColor="dark"
               >
                 Posts
+              </Sidebar.Item>
+            ))}
+          {currentUser?.isAdmin ||
+            (currentUserGoogle?.isAdmin && (
+              <Sidebar.Item
+                as={Link}
+                to="/dashboard?tab=users"
+                icon={HiOutlineUserGroup}
+                active={tab === "users"}
+                labelColor="dark"
+              >
+                Users
               </Sidebar.Item>
             ))}
           <Sidebar.Item
