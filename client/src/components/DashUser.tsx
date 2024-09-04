@@ -11,7 +11,6 @@ interface User {
   email?: string;
   profilePicture?: string;
   isAdmin?: boolean;
-
   createdAt?: string;
   updatedAt?: string;
 }
@@ -42,12 +41,12 @@ const DashUser = () => {
     }
   };
 
-  // NOTE - Delete posts
-  const handledDelete = async (userId: string) => {
+  // NOTE - Delete user
+  const handledDelete = async (userId: string, userName: string) => {
     try {
       Swal.fire({
         title: "คุณต้องการลบ ?",
-        text: title,
+        text: userName,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -58,15 +57,21 @@ const DashUser = () => {
         if (result.isConfirmed) {
           // NOTE - ถ้ากดตกลง จำทะการ delete
 
-          const res = await axios.delete(
-            `/api/user/deleteuser/${userId}/${
-              currentUserGoogle?._id || currentUser?._id
-            }`
-          );
+          const res = await axios.delete(`/api/user/deleteuser/${userId}`);
 
           if (res?.status === 200) {
-            // NOTE - ทำการ fillter post ที่ไม่เท่ากับที่ลบ ออกไป
-            setUsers((prev) => prev.filter((post) => post._id !== postId));
+            // NOTE - ทำการ fillter user ที่ไม่เท่ากับที่ลบ ออกไป
+            console.log("res", res);
+
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: res?.data,
+              showConfirmButton: false,
+              timer: 1500,
+            }).then(() => {
+              setUsers((prev) => prev.filter((user) => user._id !== userId));
+            });
           }
         }
       });
@@ -78,7 +83,7 @@ const DashUser = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(`/api/user/getusers?userId`);
+        const res = await axios.get(`/api/user/getusers`);
 
         if (res.status == 200) {
           setUsers(res.data?.user);
@@ -136,7 +141,10 @@ const DashUser = () => {
                   <Table.Cell>
                     <p
                       className="hover:underline text-red-500 cursor-pointer font-bold "
-                      onClick={() => handledDelete(users._id ?? "")}
+                      onClick={() =>
+                        handledDelete(users._id ?? "", users?.username ?? "")
+                      }
+                      hidden={users?.isAdmin}
                     >
                       Delete
                     </p>
