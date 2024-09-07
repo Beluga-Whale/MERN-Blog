@@ -61,7 +61,6 @@ const DashUser = () => {
 
           if (res?.status === 200) {
             // NOTE - ทำการ fillter user ที่ไม่เท่ากับที่ลบ ออกไป
-            console.log("res", res);
 
             Swal.fire({
               position: "center",

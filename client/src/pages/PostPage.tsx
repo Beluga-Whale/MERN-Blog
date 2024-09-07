@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import { Button, Spinner } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import CommentSection from "../components/CommentSection";
 
 interface PostDetail {
   _id: string;
@@ -82,9 +83,11 @@ const PostPage = () => {
       </div>
       {/* NOTE - Content */}
       <div
-        className="leading-8"
+        className="leading-8 border-b pb-5"
         dangerouslySetInnerHTML={{ __html: post?.content ?? "" }}
       />
+      {/* NOTE - Comment */}
+      <CommentSection postId={post?._id} />
     </main>
   );
 };
