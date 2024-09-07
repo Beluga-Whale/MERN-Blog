@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { commentUserType } from "./CommentSection";
 import axios from "axios";
 import moment from "moment";
 import { FaThumbsUp } from "react-icons/fa";
 import { useAppSelector } from "../redux/hooks";
+import { Button, Textarea } from "flowbite-react";
 
 interface CommentProps {
   comment: commentUserType;
   handleLike: (commentId: string) => Promise<void>;
+  handleEdit: (commentId: string, editContent: string) => Promise<void>;
 }
 
 interface UserType {
@@ -20,12 +22,34 @@ interface UserType {
   isAdmin: boolean;
 }
 
-const Comment = ({ comment, handleLike }: CommentProps) => {
+const Comment = ({ comment, handleLike, handleEdit }: CommentProps) => {
   const [user, setUser] = useState<UserType | undefined>(undefined);
-
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [commentEdit, setCommentEdit] = useState<string | undefined>("");
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
+  const commentRef = useRef<HTMLDivElement>(null);
+  const handleToggleEdit = () => {
+    setIsEdit(true);
+    setCommentEdit(comment?.content);
+  };
+
+  const handleSave = async () => {
+    try {
+      const res = await axios.put(`/api/comment/editComment/${comment?._id}`, {
+        content: commentEdit,
+      });
+      if (res?.status == 200) {
+        setIsEdit(false);
+        handleEdit(comment?._id, commentEdit ?? "");
+
+        commentRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    } catch (error) {
+      console.log("Error edit comment", error);
+    }
+  };
 
   useEffect(() => {
     const getUser = async () => {
@@ -52,6 +76,7 @@ const Comment = ({ comment, handleLike }: CommentProps) => {
         />
       </div>
       <div className="flex-1">
+        {/* NOTE - User */}
         <div className="flex items-center mb-1">
           <span className="font-bold mr-1 text-xs truncate">
             {user ? `@${user.username}` : "anonymouse"}
@@ -60,28 +85,67 @@ const Comment = ({ comment, handleLike }: CommentProps) => {
             {moment(comment?.createdAt).fromNow()}{" "}
           </span>
         </div>
-        <p className="text-gray-500 pb-2">{comment?.content}</p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className={`text-gray-400 hover:text-blue-500 ${
-              (currentUser || currentUserGoogle) &&
-              comment?.likes.includes(
-                (currentUser?._id || currentUserGoogle?._id) ?? ""
-              ) &&
-              "!text-blue-500"
-            }`}
-            onClick={() => handleLike(comment?._id)}
-          >
-            <FaThumbsUp className={`text-sm }`} />
-          </button>
-          <p className="text-gray-400">
-            {comment?.numberOfLikes > 0 &&
-              comment?.numberOfLikes +
-                " " +
-                (comment?.numberOfLikes === 1 ? "like" : "likes")}
-          </p>
-        </div>
+        {/* NOTE - Content */}
+        {isEdit ? (
+          <>
+            <Textarea
+              placeholder="Leave a comment..."
+              required
+              rows={4}
+              maxLength={250}
+              value={commentEdit}
+              onChange={(e) => setCommentEdit(e.target.value)}
+            />
+            <div className="flex justify-end gap-2 my-5 ">
+              <Button type="button" onClick={handleSave}>
+                Save
+              </Button>
+              <Button
+                type="button"
+                color="red"
+                onClick={() => setIsEdit(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-gray-500 pb-2">{comment?.content}</p>
+            {/* NOTE - Like */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className={`text-gray-400 hover:text-blue-500 ${
+                  (currentUser || currentUserGoogle) &&
+                  comment?.likes.includes(
+                    (currentUser?._id || currentUserGoogle?._id) ?? ""
+                  ) &&
+                  "!text-blue-500"
+                }`}
+                onClick={() => handleLike(comment?._id)}
+              >
+                <FaThumbsUp className={`text-sm }`} />
+              </button>
+              <p className="text-gray-400">
+                {comment?.numberOfLikes > 0 &&
+                  comment?.numberOfLikes +
+                    " " +
+                    (comment?.numberOfLikes === 1 ? "like" : "likes")}
+              </p>
+              {comment?.userId ==
+                (currentUser?._id || currentUserGoogle?._id) && (
+                <button
+                  type="button"
+                  className="hover:underline hover:text-blue-500 "
+                  onClick={handleToggleEdit}
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

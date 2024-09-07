@@ -106,6 +106,21 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     }
   };
 
+  // NOTE - แก้ไข comment
+  const handleEdit = async (commentId: string, editContent: string) => {
+    setCommentUser(
+      commentUser?.map(
+        (item) =>
+          item._id === commentId
+            ? {
+                ...item,
+                content: editContent,
+              }
+            : item //NOTE - Return the item as is if the condition is not met
+      )
+    );
+  };
+
   useEffect(() => {
     fetchComment();
   }, [postId]);
@@ -187,6 +202,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
               key={comment?._id}
               comment={comment}
               handleLike={handleLike}
+              handleEdit={handleEdit}
             />
           ))}
         </>
