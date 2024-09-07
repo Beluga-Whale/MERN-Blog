@@ -117,3 +117,16 @@ export const deleteUser = async (req, res, next) => {
 
   res.status(200).json("Delete Success");
 };
+
+export const getUser = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    const { password, ...rest } = user._doc;
+
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
+  }
+};

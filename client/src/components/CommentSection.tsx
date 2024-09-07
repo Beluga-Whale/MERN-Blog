@@ -1,12 +1,24 @@
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks";
 import { Alert, Button, Textarea } from "flowbite-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Swal from "sweetalert2";
+import Comment from "./Comment";
 
 interface CommentSectionProps {
   postId: string | undefined;
+}
+
+export interface commentUserType {
+  _id: string;
+  userId: string;
+  content: string;
+  likes: [];
+  numberOfLikes: number;
+  postId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
@@ -16,6 +28,21 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const [comment, setComment] = useState<string | undefined>("");
   const [errorComment, setErrorComment] = useState<string | undefined>("");
+  const [commentUser, setCommentUser] = useState<commentUserType[] | undefined>(
+    undefined
+  );
+
+  const fetchComment = async () => {
+    try {
+      const res = await axios.get(`/api/comment/getPostComments/${postId}`);
+
+      setCommentUser(res?.data);
+    } catch (error) {
+      console.log("Error show comment", error);
+    }
+  };
+
+  //   NOTE - บันทึก Comment
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (comment !== undefined && comment?.length > 200) {
@@ -37,6 +64,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         }).then(() => {
           setComment("");
           setErrorComment(undefined);
+          fetchComment();
         });
       } else {
         console.log("error comment", res?.data);
@@ -49,6 +77,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       }
     }
   };
+
+  useEffect(() => {
+    fetchComment();
+  }, [postId]);
 
   return (
     <div className="  max-w-2xl mx-auto p-3 w-full ">
@@ -110,6 +142,22 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             </Alert>
           )}
         </form>
+      )}
+      {commentUser?.length === 9 ? (
+        <p>This post is no comment</p>
+      ) : (
+        <>
+          <div className="mt-5">
+            <p>
+              Comment{" "}
+              <span className="text-blue-500 ">{commentUser?.length}</span>{" "}
+              comments{" "}
+            </p>
+          </div>
+          {commentUser?.map((comment) => (
+            <Comment key={comment?._id} comment={comment} />
+          ))}
+        </>
       )}
     </div>
   );
