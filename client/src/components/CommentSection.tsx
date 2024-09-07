@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks";
 import { Alert, Button, Textarea } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
@@ -14,7 +14,7 @@ export interface commentUserType {
   _id: string;
   userId: string;
   content: string;
-  likes: [];
+  likes: string[];
   numberOfLikes: number;
   postId: string;
   createdAt: string;
@@ -22,6 +22,8 @@ export interface commentUserType {
 }
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
+  const navigate = useNavigate();
+
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
@@ -31,6 +33,32 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [commentUser, setCommentUser] = useState<commentUserType[] | undefined>(
     undefined
   );
+
+  const handleLike = async (commentId: string) => {
+    try {
+      if (!currentUser && !currentUserGoogle) {
+        return navigate("/sign-in");
+      }
+      const res = await axios.put(`/api/comment/likeComment/${commentId}`);
+      if (res.status == 200) {
+        // NOTE - Update commentUser
+        setCommentUser(
+          commentUser?.map(
+            (item) =>
+              item._id === commentId
+                ? {
+                    ...item,
+                    likes: res?.data?.likes,
+                    numberOfLikes: res?.data?.likes.length,
+                  }
+                : item //NOTE - Return the item as is if the condition is not met
+          )
+        );
+      }
+    } catch (error) {
+      console.log("Error like", error);
+    }
+  };
 
   const fetchComment = async () => {
     try {
@@ -155,7 +183,11 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             </p>
           </div>
           {commentUser?.map((comment) => (
-            <Comment key={comment?._id} comment={comment} />
+            <Comment
+              key={comment?._id}
+              comment={comment}
+              handleLike={handleLike}
+            />
           ))}
         </>
       )}

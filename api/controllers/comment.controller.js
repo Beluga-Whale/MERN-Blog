@@ -37,3 +37,29 @@ export const getPostComment = async (req, res, next) => {
     next(error);
   }
 };
+
+export const likeComment = async (req, res, next) => {
+  const { commentId } = req.params;
+  try {
+    const comment = await Comment.findById(commentId);
+    // NOTE - เเช็คว่ามี Comment นี้ไหม
+    if (!comment) {
+      return next(errorHandler(404, "Comment not found"));
+    }
+    // NOTE - indexOd ใช้ในการหาว่า req.user.id นี้มีอยู่ใน likes ที่เป็น array ไหม ถ้าไม่มีจะ return -1 ออกมา ถ้ามีฏ้จะ return ตำแหน่ง index ออกมา
+    const userIndex = comment.likes.indexOf(req.user.id);
+
+    if (userIndex === -1) {
+      comment.numberOfLikes += 1;
+      comment.likes.push(req.user.id);
+    } else {
+      // NOTE - เอา user.id ออกเพื่อยกเลิกถูกใจ
+      comment.numberOfLikes -= 1;
+      comment.likes.splice(userIndex, 1);
+    }
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    next(error);
+  }
+};
