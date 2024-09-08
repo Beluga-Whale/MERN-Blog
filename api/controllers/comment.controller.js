@@ -90,3 +90,24 @@ export const editComment = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteComment = async (req, res, next) => {
+  const { commentId } = req.params;
+
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return next(errorHandler(404, "Comment not found"));
+    }
+    // NOTE - เช็คว่าเป้นคนเดียวกับที่คอมมเม้นไหม
+    if (comment.userId !== req.user.id) {
+      return next(errorHandler(403, "You not allowed to edit this comment"));
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+
+    res.status(200).json("You comment has been deleted");
+  } catch (error) {
+    next(error);
+  }
+};

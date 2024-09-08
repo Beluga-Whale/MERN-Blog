@@ -23,7 +23,6 @@ export interface commentUserType {
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
   const navigate = useNavigate();
-
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
@@ -121,6 +120,34 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     );
   };
 
+  // NOTE - Delete comment
+  const handleDelete = async (commentId: string) => {
+    try {
+      Swal.fire({
+        title: "You want to delete this comment?",
+        text: "",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const res = await axios.delete(
+            `/api/comment/deleteComment/${commentId}`
+          );
+          if (res.status === 200) {
+            setCommentUser(
+              commentUser?.filter((item) => item._id !== commentId)
+            );
+          }
+        }
+      });
+    } catch (error) {
+      console.log("Delete comment Error", error);
+    }
+  };
+
   useEffect(() => {
     fetchComment();
   }, [postId]);
@@ -203,6 +230,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
               comment={comment}
               handleLike={handleLike}
               handleEdit={handleEdit}
+              handleDelete={handleDelete}
             />
           ))}
         </>

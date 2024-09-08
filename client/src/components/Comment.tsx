@@ -10,6 +10,7 @@ interface CommentProps {
   comment: commentUserType;
   handleLike: (commentId: string) => Promise<void>;
   handleEdit: (commentId: string, editContent: string) => Promise<void>;
+  handleDelete: (commentId: string) => Promise<void>;
 }
 
 interface UserType {
@@ -22,7 +23,12 @@ interface UserType {
   isAdmin: boolean;
 }
 
-const Comment = ({ comment, handleLike, handleEdit }: CommentProps) => {
+const Comment = ({
+  comment,
+  handleLike,
+  handleEdit,
+  handleDelete,
+}: CommentProps) => {
   const [user, setUser] = useState<UserType | undefined>(undefined);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [commentEdit, setCommentEdit] = useState<string | undefined>("");
@@ -135,13 +141,24 @@ const Comment = ({ comment, handleLike, handleEdit }: CommentProps) => {
               </p>
               {comment?.userId ==
                 (currentUser?._id || currentUserGoogle?._id) && (
-                <button
-                  type="button"
-                  className="hover:underline hover:text-blue-500 "
-                  onClick={handleToggleEdit}
-                >
-                  Edit
-                </button>
+                <>
+                  {/* NOTE - Edit Comment */}
+                  <button
+                    type="button"
+                    className="hover:underline hover:text-blue-500 "
+                    onClick={handleToggleEdit}
+                  >
+                    Edit
+                  </button>
+                  {/* NOTE - Delete Comment */}
+                  <button
+                    type="button"
+                    className="hover:underline hover:text-red-500 "
+                    onClick={() => handleDelete(comment?._id)}
+                  >
+                    Delete
+                  </button>
+                </>
               )}
             </div>
           </>
