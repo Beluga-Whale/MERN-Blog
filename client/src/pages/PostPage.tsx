@@ -4,8 +4,9 @@ import { Button, Spinner } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import CommentSection from "../components/CommentSection";
+import PostCard from "../components/PostCard";
 
-interface PostDetail {
+export interface PostDetail {
   _id: string;
   title: string;
   image: string;
@@ -20,6 +21,10 @@ interface PostDetail {
 const PostPage = () => {
   const { postSlug } = useParams();
   const [post, setPost] = useState<PostDetail | undefined>(undefined);
+  const [recommendedPost, setRecommendedPost] = useState<
+    PostDetail[] | undefined
+  >(undefined);
+
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
     const fetchPost = async () => {
@@ -42,6 +47,29 @@ const PostPage = () => {
     };
     fetchPost();
   }, [postSlug]);
+
+  // NOTE Fetch data for recommend
+  useEffect(() => {
+    const fetchPostRecommend = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`/api/post/getposts?limit=4`);
+
+        // NOTE - เช็คว่า status 200 ถ้าใช่ให้ set data ลงใน setPost
+        if (res.status == 200) {
+          setRecommendedPost(res?.data?.posts);
+          setLoading(false);
+        } else {
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
+    };
+    fetchPostRecommend();
+  }, []);
 
   if (loading) {
     return (
@@ -86,6 +114,15 @@ const PostPage = () => {
         className="leading-8 border-b pb-5"
         dangerouslySetInnerHTML={{ __html: post?.content ?? "" }}
       />
+      {/*NOTE - Random post */}
+      <div className="flex flex-col justify-center items-center py-5 border-b">
+        <h1 className="text-xl font-bold">Recommended from Beluga Blog</h1>
+        <div className="grid grid-cols-1 mt-5 gap-5 md:grid-cols-2 ">
+          {recommendedPost?.map((post) => (
+            <PostCard key={post?._id} postInfo={post} />
+          ))}
+        </div>
+      </div>
       {/* NOTE - Comment */}
       <CommentSection postId={post?._id} />
     </main>
