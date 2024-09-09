@@ -1,5 +1,5 @@
 import { Footer } from "flowbite-react";
-import { BsFacebook } from "react-icons/bs";
+import { BsFacebook, BsGithub, BsInstagram } from "react-icons/bs";
 import { Link } from "react-router-dom";
 
 const FooterCom = () => {
@@ -62,10 +62,15 @@ const FooterCom = () => {
             year={new Date().getFullYear()}
           />
           <div className="flex gap-6 mt-5 sm:mt-0">
-            <Footer.Icon href="#" icon={BsFacebook} />
-            <Footer.Icon href="#" icon={BsFacebook} />
-            <Footer.Icon href="#" icon={BsFacebook} />
-            <Footer.Icon href="#" icon={BsFacebook} />
+            <Footer.Icon href="https://www.facebook.com" icon={BsFacebook} />
+            <Footer.Icon
+              href="https://www.instagram.com/halay.x/?next=%2F"
+              icon={BsInstagram}
+            />
+            <Footer.Icon
+              href="https://github.com/Beluga-Whale"
+              icon={BsGithub}
+            />
           </div>
         </div>
       </div>
