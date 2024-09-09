@@ -111,7 +111,7 @@ const PostPage = () => {
       </div>
       {/* NOTE - Content */}
       <div
-        className="leading-8 border-b pb-5"
+        className="leading-8 border-b max-w-3xl mx-auto  pb-5 "
         dangerouslySetInnerHTML={{ __html: post?.content ?? "" }}
       />
       {/*NOTE - Random post */}
