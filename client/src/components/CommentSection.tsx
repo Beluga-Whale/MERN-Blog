@@ -213,7 +213,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           )}
         </form>
       )}
-      {commentUser?.length === 9 ? (
+      {commentUser?.length ?? 0 > 9 ? (
         <p>This post is no comment</p>
       ) : (
         <>

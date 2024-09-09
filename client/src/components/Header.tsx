@@ -1,17 +1,21 @@
 import { Avatar, Button, Dropdown, Navbar, TextInput } from "flowbite-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import axios from "axios";
 import { resetState } from "../redux/user/userSlice";
+import { FormEvent, useEffect, useState } from "react";
 
 const Header = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
+  const [search, setSearch] = useState<string>("");
   const { theme } = useAppSelector((state) => state.theme);
   const { pathname } = useLocation();
 
@@ -31,6 +35,27 @@ const Header = () => {
       console.log(error);
     }
   };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // NOTE - ทำการ set querystring จากการ searh
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("searchTerm", search);
+    const searchQuery = urlParams.toString();
+
+    navigate(`/search?${searchQuery}`);
+  };
+
+  useEffect(() => {
+    // NOTE - get query จาก searchTerm
+    const urlParams = new URLSearchParams(location.search);
+
+    const searchTermFromUrl = urlParams.get("searchTerm");
+    if (searchTermFromUrl) {
+      setSearch(searchTermFromUrl ?? "");
+    }
+  }, [location?.search]);
+
   return (
     <Navbar className="border-b-2">
       <Link
@@ -43,12 +68,14 @@ const Header = () => {
         Blog
       </Link>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <TextInput
           type="text"
           placeholder="Search..."
           rightIcon={AiOutlineSearch}
           className="hidden lg:inline"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </form>
       <Button className="w-12 h-10 lg:hidden " color="gray" pill>

@@ -96,7 +96,6 @@ const CreatePost = () => {
         setCreatePostError(data?.data);
       } else {
         setCreatePostError(null);
-        console.log("DATA", data?.data);
 
         Swal.fire({
           icon: "success",
