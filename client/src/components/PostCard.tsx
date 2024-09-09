@@ -21,7 +21,7 @@ const PostCard = ({ postInfo }: PostCardProps) => {
           src={postInfo?.image}
           alt={postInfo?.title}
         />
-        <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white  line-clamp-1">
           {postInfo?.title}
         </h5>
         <div

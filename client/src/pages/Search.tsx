@@ -158,9 +158,10 @@ const Search = () => {
               id="category"
             >
               <option value="">Uncategorized</option>
-              <option value="reactjs">React</option>
+              <option value="travel">Travel</option>
+              <option value="health">Health</option>
               <option value="food">Food</option>
-              <option value="helth">Helth</option>
+              <option value="knowledge">Knowledge</option>
             </Select>
           </div>
           <Button gradientDuoTone="purpleToPink" outline type="submit">
