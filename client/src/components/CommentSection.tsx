@@ -23,6 +23,8 @@ export interface commentUserType {
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
   const navigate = useNavigate();
+  console.log("postId", postId);
+
   const { currentUser, currentUserGoogle } = useAppSelector(
     (state) => state.user
   );
@@ -32,6 +34,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [commentUser, setCommentUser] = useState<commentUserType[] | undefined>(
     undefined
   );
+  console.log("commentUser", commentUser);
 
   const handleLike = async (commentId: string) => {
     try {
@@ -213,7 +216,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           )}
         </form>
       )}
-      {commentUser?.length ?? 0 > 9 ? (
+      {commentUser?.length != undefined && commentUser?.length > 9 ? (
         <p>This post is no comment</p>
       ) : (
         <>
