@@ -44,8 +44,8 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       const res = await axios.put(`/api/comment/likeComment/${commentId}`);
       if (res.status == 200) {
         // NOTE - Update commentUser
-        setCommentUser(
-          commentUser?.map(
+        setComment(
+          comment?.map(
             (item) =>
               item._id === commentId
                 ? {
